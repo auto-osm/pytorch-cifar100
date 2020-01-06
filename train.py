@@ -5,11 +5,12 @@
 
 author baiyu
 """
-
+from collections import OrderedDict
 import os
 import sys
 import argparse
 from datetime import datetime
+import pickle
 
 import numpy as np
 import torch
@@ -44,6 +45,7 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
+        """
         print('\tTraining Epoch: {epoch} [{trained_samples}/{total_samples}]\tLoss: {:0.4f}\tLR: {:0.6f}'.format(
             loss.item(),
             optimizer.param_groups[0]['lr'],
@@ -51,6 +53,7 @@ def train(epoch):
             trained_samples=batch_index * args.b + len(images),
             total_samples=len(cifar100_training_loader.dataset)
         ))
+        """
 
 def eval_training(epoch):
     net.eval()
@@ -71,12 +74,13 @@ def eval_training(epoch):
         _, preds = outputs.max(1)
         correct += preds.eq(labels).sum()
 
+    """
     print('\tTest set: Average loss: {:.4f}, Accuracy: {:.4f}'.format(
         test_loss / len(cifar100_test_loader.dataset),
         correct.float() / len(cifar100_test_loader.dataset)
     ))
     print()
-
+    """
     return correct.float() / len(cifar100_test_loader.dataset)
 
 if __name__ == '__main__':
@@ -122,6 +126,11 @@ if __name__ == '__main__':
         os.makedirs(checkpoint_path)
     checkpoint_path = os.path.join(checkpoint_path, '{net}-{epoch}-{type}.pth')
 
+    print("starting training...")
+    sys.stdout.flush()
+
+    accs = OrderedDict()
+
     best_acc = 0.0
     best_acc_epoch = -1
     for epoch in range(1, settings.EPOCH):
@@ -135,13 +144,16 @@ if __name__ == '__main__':
         print("Epoch %d acc %f, best acc %f from epoch %d, time %s" % (epoch, acc, best_acc, best_acc_epoch, datetime.now()))
         sys.stdout.flush()
 
-        #start to save best performance model after learning rate decay to 0.01 
-        if epoch > settings.MILESTONES[1] and best_acc < acc:
+        if best_acc < acc:
             print("saving to best model")
             torch.save(net.state_dict(), checkpoint_path.format(net=args.net, epoch=epoch, type='best'))
             best_acc = acc
             best_acc_epoch = epoch
             continue
+
+        accs[epoch] = acc
+        with open(os.path.join(settings.CHECKPOINT_PATH, "accs.pickle"), "wb") as accs_f:
+          pickle.dump(accs, accs_f)
 
         if not epoch % settings.SAVE_EPOCH:
             torch.save(net.state_dict(), checkpoint_path.format(net=args.net, epoch=epoch, type='regular'))
