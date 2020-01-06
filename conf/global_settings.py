@@ -16,10 +16,10 @@ CIFAR100_TRAIN_STD = (0.2673342858792401, 0.2564384629170883, 0.2761504713256840
 #CIFAR100_TEST_STD = (0.2682515741720801, 0.2573637364478126, 0.2770957707973042)
 
 #directory to save weights file
-CHECKPOINT_PATH = 'checkpoint'
+CHECKPOINT_PATH = "/scratch/shared/nfs1/xuji/sogr/pretrained/cifar100"
 
 #total training epoches
-EPOCH = 200 
+EPOCH = 500
 MILESTONES = [60, 120, 160]
 
 #initial learning rate
@@ -29,7 +29,7 @@ MILESTONES = [60, 120, 160]
 TIME_NOW = datetime.now().isoformat()
 
 #tensorboard log dir
-LOG_DIR = 'runs'
+#LOG_DIR = 'runs'
 
 #save weights file per SAVE_EPOCH epoch
 SAVE_EPOCH = 10
